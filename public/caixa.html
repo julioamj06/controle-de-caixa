@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Saída de Caixa</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex min-h-screen">
+
+  <!-- Menu lateral -->
+  <nav class="w-64 bg-blue-800 text-white p-6 space-y-4">
+    <h2 class="text-2xl font-bold mb-6">Meu Sistema</h2>
+    <ul class="space-y-2">
+      <li><a href="cadastro.html" class="block px-4 py-2 rounded hover:bg-blue-600">Cadastro</a></li>
+      <li><a href="vendas.html" class="block px-4 py-2 rounded hover:bg-blue-600">Vendas</a></li>
+      <li><a href="relatorio.html" class="block px-4 py-2 rounded hover:bg-blue-600">Relatório</a></li>
+      <li><a href="caixa.html" class="block px-4 py-2 bg-blue-600 rounded hover:bg-blue-700">Saída de Caixa</a></li>
+    </ul>
+  </nav>
+
+  <!-- Conteúdo principal -->
+  <main class="flex-1 p-8">
+    <h1 class="text-2xl font-bold text-gray-800 mb-6">Registrar Saída de Caixa</h1>
+
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-md mb-8">
+      <form id="formSaida">
+        <input type="number" id="valor" placeholder="Valor (R$)" step="0.01" required class="w-full p-2 mb-4 border rounded" />
+        <input type="text" id="motivo" placeholder="Motivo" required class="w-full p-2 mb-4 border rounded" />
+        <button type="submit" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Registrar</button>
+      </form>
+    </div>
+
+    <div class="bg-white p-6 rounded-lg shadow-md max-w-md">
+      <h2 class="text-xl font-semibold mb-4 text-gray-700">Totais de Saída</h2>
+      <p id="totalDia" class="mb-2 text-gray-800">Total de hoje: R$ 0,00</p>
+      <p id="totalMes" class="text-gray-800">Total do mês: R$ 0,00</p>
+    </div>
+
+    <script>
+      const form = document.getElementById('formSaida');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const valor = parseFloat(document.getElementById('valor').value);
+        const motivo = document.getElementById('motivo').value;
+
+        const resposta = await fetch('/saida', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ valor, motivo })
+        });
+
+        if (resposta.ok) {
+          alert('Saída registrada!');
+          form.reset();
+          carregarTotais();
+        } else {
+          alert('Erro ao registrar saída');
+        }
+      });
+
+      async function carregarTotais() {
+        try {
+          const res = await fetch('/saida/totais');
+          if (!res.ok) throw new Error('Erro na resposta');
+          const { total_dia, total_mes } = await res.json();
+
+          document.getElementById('totalDia').textContent = `Total de hoje: R$ ${total_dia.toFixed(2)}`;
+          document.getElementById('totalMes').textContent = `Total do mês: R$ ${total_mes.toFixed(2)}`;
+        } catch (error) {
+          console.error('Erro ao buscar totais:', error);
+        }
+      }
+
+      // Carregar totais ao iniciar
+      carregarTotais();
+    </script>
+  </main>
+</body>
+</html>
