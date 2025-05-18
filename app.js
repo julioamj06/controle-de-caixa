@@ -46,7 +46,7 @@ app.get('/produtos', (req, res) => {
 
 // Rota de Venda
 app.post('/vendas', (req, res) => {
-  let {produto_id, quantidade} = req.body;
+  let { produto_id, quantidade } = req.body;
   produto_id = parseInt(produto_id);
 
   if (!produto_id || !Number.isInteger(produto_id)) {
@@ -123,6 +123,40 @@ app.post('/saida', (req, res) => {
     (err) => {
       if (err) return res.status(500).json({ erro: 'Erro ao registrar saída' });
       res.json({ sucesso: true });
+    }
+  );
+});
+
+// ROTA ALTERADA - Totais de saídas do dia e do mês
+app.get('/saida/totais', (req, res) => {
+  const hojeInicio = new Date();
+  hojeInicio.setHours(0, 0, 0, 0);
+  const hojeInicioISO = hojeInicio.toISOString();
+
+  const mesInicio = new Date();
+  mesInicio.setDate(1);
+  mesInicio.setHours(0, 0, 0, 0);
+  const mesInicioISO = mesInicio.toISOString();
+
+  db.get(
+    'SELECT SUM(valor) AS total_dia FROM saidas_caixa WHERE data >= ?',
+    [hojeInicioISO],
+    (err1, row1) => {
+      if (err1) return res.status(500).json({ erro: 'Erro ao calcular total do dia' });
+
+      const total_dia = row1.total_dia || 0;
+
+      db.get(
+        'SELECT SUM(valor) AS total_mes FROM saidas_caixa WHERE data >= ?',
+        [mesInicioISO],
+        (err2, row2) => {
+          if (err2) return res.status(500).json({ erro: 'Erro ao calcular total do mês' });
+
+          const total_mes = row2.total_mes || 0;
+
+          res.json({ total_dia, total_mes });
+        }
+      );
     }
   );
 });
