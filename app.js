@@ -46,7 +46,8 @@ app.get('/produtos', (req, res) => {
 
 // Rota de Venda
 app.post('/vendas', (req, res) => {
-  const { produto_id, quantidade } = req.body;
+  let {produto_id, quantidade} = req.body;
+  produto_id = parseInt(produto_id);
 
   if (!produto_id || !Number.isInteger(produto_id)) {
     return res.status(400).json({ erro: 'ID do produto inválido' });

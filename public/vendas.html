@@ -55,7 +55,7 @@
       const form = document.getElementById('formVenda');
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const produto_id = produtoSelect.value;
+        const produto_id = parseInt(produtoSelect.value);
         const quantidade = parseInt(document.getElementById('quantidade').value);
 
         const resposta = await fetch('/vendas', {
